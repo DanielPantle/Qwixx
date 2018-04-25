@@ -19,6 +19,7 @@ import java.util.HashMap;
  */
 
 public class Button extends TextButton {
+	
 	public enum ButtonType {
 		ROT("rot", "grau"),
 		GELB("gelb", "grau"),
@@ -27,7 +28,7 @@ public class Button extends TextButton {
 		MISS("miss", "grau"),
 		RES("res", "grau"),
 		CHECKED("grau"),
-		NORMAL("normal", "normal_down", "normal"),
+		STANDARD("standard", "standard_down", "standard"),
 		OPERATOR("none");
 		
 		ButtonType(String up) {
@@ -61,8 +62,9 @@ public class Button extends TextButton {
 		}
 	}
 	
-	private static final String BUTTONS_PATH = "buttons/";
-	private static final String BUTTONS_ATLAS = "buttons.atlas";
+	public static final String BUTTONS_PATH = "buttons/";
+	public static final String FILE_EXTENSION = ".png";
+	public static final String BUTTONS_ATLAS = "buttons.atlas";
 	
 	private static HashMap<ButtonType, TextButtonStyle> textButtonStyles;
 	private static TextureAtlas textureAtlas;
@@ -79,7 +81,7 @@ public class Button extends TextButton {
 	public static void init() {
 		init(Color.BLACK);
 	}
-	public static void init(Color color) {
+	private static void init(Color color) {
 		FileHandle fontFile = Gdx.files.internal("Comfortaa.ttf");
 		FreeTypeFontGenerator generator = new FreeTypeFontGenerator(fontFile);
 		FreeTypeFontGenerator.FreeTypeFontParameter parameter = new FreeTypeFontGenerator.FreeTypeFontParameter();

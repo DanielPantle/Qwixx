@@ -4,6 +4,7 @@ import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.math.collision.BoundingBox;
 import com.badlogic.gdx.physics.bullet.collision.ContactListener;
 import com.badlogic.gdx.physics.bullet.collision.btCollisionShape;
 import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
@@ -44,8 +45,18 @@ public class Helper {
 		public final btRigidBody body;
 		public final MyMotionState motionState;
 		
+		private final static BoundingBox bounds = new BoundingBox();
+		public final Vector3 center = new Vector3();
+		public final Vector3 dimensions = new Vector3();
+		public final float radius;
+		
 		public GameObject (Model model, String node, btRigidBody.btRigidBodyConstructionInfo constructionInfo) {
 			super(model, node);
+			calculateBoundingBox(bounds);
+			bounds.getCenter(center);
+			bounds.getDimensions(dimensions);
+			radius = dimensions.len() / 2f;
+			
 			motionState = new MyMotionState();
 			motionState.transform = transform;
 			body = new btRigidBody(constructionInfo);

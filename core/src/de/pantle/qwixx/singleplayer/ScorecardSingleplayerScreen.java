@@ -1,38 +1,31 @@
-package de.pantle.qwixx.screens;
+package de.pantle.qwixx.singleplayer;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.scenes.scene2d.Actor;
-import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
-import com.badlogic.gdx.utils.viewport.ScreenViewport;
 
 import java.util.ArrayList;
 
 import de.pantle.qwixx.utils.AbstractScreen;
 import de.pantle.qwixx.utils.Button;
 import de.pantle.qwixx.utils.Constants;
-import de.pantle.qwixx.utils.DiceValues;
-import de.pantle.qwixx.utils.ScreenManager;
+import de.pantle.qwixx.utils.Overlay;
 
 /**
  * Created by Daniel on 03.02.2018.
  */
 
-public class Scorecard extends AbstractScreen {
-	private Stage stage;
-	
+public class ScorecardSingleplayerScreen extends AbstractScreen {
 	private ArrayList<ArrayList<Button>> buttons;
-	private Table table;
-	private DiceValues diceValues;
+	private Overlay overlay;
 	
-	public Scorecard() {
-		stage = new Stage(new ScreenViewport());
+	public ScorecardSingleplayerScreen() {
+		super();
 		
 		// Tabelle initialisieren
-		table = new Table();
+		Table table = new Table();
 		table.setSize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight() - (Gdx.graphics.getHeight() * Constants.EDGE_HEIGHT_PERCENT * 2));
 		table.setPosition(0, Gdx.graphics.getHeight() * Constants.EDGE_HEIGHT_PERCENT);
 		
@@ -48,6 +41,7 @@ public class Scorecard extends AbstractScreen {
 			// Buttons hinzufügen
 			for (int i = 2; i <= Constants.BUTTONS_PER_COLOR_COUNT + 1; i++) {
 				Button colorButton = new Button(String.valueOf(i), Button.ButtonType.values()[row]);
+				colorButton.setSize(buttonSize, buttonSize);
 				
 				if (i == Constants.BUTTONS_PER_COLOR_COUNT + 1) {
 					colorButton.setText("+");
@@ -130,22 +124,7 @@ public class Scorecard extends AbstractScreen {
 		
 		
 		// Labels: Ausgabe der Zahlenwerte
-		diceValues = new DiceValues();
-		stage.addActor(diceValues);
-		
-		// Button zu den Würfeln hinzufügen
-		Button.init(Color.WHITE);
-		Button showDicesScreenButton = new Button("Würfel anzeigen", Button.ButtonType.NORMAL);
-		showDicesScreenButton.addListener(new ChangeListener() {
-			@Override
-			public void changed(ChangeEvent event, Actor actor) {
-				DiceValues.saveValues();
-				ScreenManager.showRollingDices();
-			}
-		});
-		showDicesScreenButton.setSize((Gdx.graphics.getWidth() / 2) - Constants.BUTTONS_PADDING, (Gdx.graphics.getHeight() * Constants.EDGE_HEIGHT_PERCENT) - Constants.BUTTONS_PADDING);
-		showDicesScreenButton.setPosition(0, 0);
-		stage.addActor(showDicesScreenButton);
+		overlay = new Overlay(stage);
 	}
 	
 	
@@ -281,13 +260,13 @@ public class Scorecard extends AbstractScreen {
 	
 	@Override
 	public void show() {
-		Gdx.input.setInputProcessor(stage);
-		diceValues.loadValues();
+		super.show();
+		overlay.show(stage);
 	}
 	
 	@Override
 	public void render(float delta) {
-		stage.draw();
+		super.render(delta);
 	}
 	
 	@Override
@@ -295,7 +274,7 @@ public class Scorecard extends AbstractScreen {
 		stage.getViewport().update(width, height, true);
 		//table.setSize(width - 40, height - 40);
 		
-		diceValues.resize();
+		overlay.resize();
 	}
 	
 	@Override
@@ -315,6 +294,5 @@ public class Scorecard extends AbstractScreen {
 	
 	@Override
 	public void dispose() {
-		stage.dispose();
 	}
 }

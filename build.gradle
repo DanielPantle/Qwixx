@@ -49,6 +49,8 @@ project(":desktop") {
 
         compile "com.badlogicgames.gdx:gdx-freetype-platform:$gdxVersion:natives-desktop"
         compile "com.badlogicgames.gdx:gdx-bullet-platform:$gdxVersion:natives-desktop"
+        compile files('libs/App42MultiPlayerGamingSDK.jar')
+        compile fileTree(dir: 'libs', include: '*.jar')
         
     }
 }
@@ -86,6 +88,9 @@ project(":android") {
         natives "com.badlogicgames.gdx:gdx-bullet-platform:$gdxVersion:natives-arm64-v8a"
         natives "com.badlogicgames.gdx:gdx-bullet-platform:$gdxVersion:natives-x86"
         natives "com.badlogicgames.gdx:gdx-bullet-platform:$gdxVersion:natives-x86_64"
+
+        compile files('libs/App42MultiPlayerGamingSDK.jar')
+        compile fileTree(dir: 'libs', include: '*.jar')
         
     }
 }
@@ -116,7 +121,8 @@ project(":core") {
 
         compile "com.badlogicgames.gdx:gdx-freetype:$gdxVersion"
         compile "com.badlogicgames.gdx:gdx-bullet:$gdxVersion"
-        
+        compile files('libs/App42MultiPlayerGamingSDK.jar')
+        compile fileTree(dir: 'libs', include: '*.jar')
     }
 }
 

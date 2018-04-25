@@ -45,14 +45,14 @@ none
   orig: 1, 1
   offset: 0, 0
   index: -1
-normal
+standard
   rotate: false
   xy: 1, 1280
   size: 1, 1
   orig: 1, 1
   offset: 0, 0
   index: -1
-normal_down
+standard_down
   rotate: false
   xy: 2, 1280
   size: 1, 1

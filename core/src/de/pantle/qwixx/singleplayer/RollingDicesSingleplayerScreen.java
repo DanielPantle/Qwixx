@@ -1,7 +1,8 @@
-package de.pantle.qwixx.screens;
+package de.pantle.qwixx.singleplayer;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputMultiplexer;
+import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
@@ -16,9 +17,11 @@ import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
 import com.badlogic.gdx.graphics.g3d.utils.CameraInputController;
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
+import com.badlogic.gdx.math.Intersector;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Quaternion;
 import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.math.collision.Ray;
 import com.badlogic.gdx.physics.bullet.Bullet;
 import com.badlogic.gdx.physics.bullet.collision.Collision;
 import com.badlogic.gdx.physics.bullet.collision.btBoxShape;
@@ -33,26 +36,23 @@ import com.badlogic.gdx.physics.bullet.dynamics.btConstraintSolver;
 import com.badlogic.gdx.physics.bullet.dynamics.btDiscreteDynamicsWorld;
 import com.badlogic.gdx.physics.bullet.dynamics.btDynamicsWorld;
 import com.badlogic.gdx.physics.bullet.dynamics.btSequentialImpulseConstraintSolver;
-import com.badlogic.gdx.scenes.scene2d.Actor;
-import com.badlogic.gdx.scenes.scene2d.Event;
-import com.badlogic.gdx.scenes.scene2d.EventListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ArrayMap;
 
+import javax.swing.TransferHandler;
+import javax.swing.text.Position;
+
 import de.pantle.qwixx.utils.AbstractScreen;
-import de.pantle.qwixx.utils.Button;
 import de.pantle.qwixx.utils.Constants;
-import de.pantle.qwixx.utils.DiceValues;
 import de.pantle.qwixx.utils.Helper;
-import de.pantle.qwixx.utils.ScreenManager;
+import de.pantle.qwixx.utils.Overlay;
 
 /**
  * Created by Daniel on 05.04.2018.
  */
 
-public class RollingDices extends AbstractScreen {
+public class RollingDicesSingleplayerScreen extends AbstractScreen implements InputProcessor {
 	
 	private final static short GROUND_FLAG = 1 << 8;
 	private final static short OBJECT_FLAG = 1 << 9;
@@ -61,8 +61,6 @@ public class RollingDices extends AbstractScreen {
 	private final static int GROUND_WIDTH = 15;
 	private final static int WALL_HEIGHT = 10;
 	
-	
-	private Stage stage;
 	private ModelBatch modelBatch;
 	private Environment environment;
 	private PerspectiveCamera camera;
@@ -70,8 +68,6 @@ public class RollingDices extends AbstractScreen {
 	private AssetManager assetManager;
 	private Array<Helper.GameObject> instances;
 	private boolean loading;
-	
-	private InputMultiplexer inputMultiplexer;
 	
 	private btCollisionConfiguration collisionConfig;
 	private btDispatcher dispatcher;
@@ -81,14 +77,19 @@ public class RollingDices extends AbstractScreen {
 	private btConstraintSolver constraintSolver;
 	
 	private Array<Helper.GameObject> dices;
-	private DiceValues diceValues;
+	private Overlay overlay;
 	private ArrayMap<String, Helper.GameObject.Constructor> constructors;
 	
+	// Drag and drop
+	private int selected = -1;
+	private Material selectionMaterial;
+	private Material originalMaterial;
+	private Vector3 position = new Vector3();
 	
-	public RollingDices() {
-		Bullet.init();
+	public RollingDicesSingleplayerScreen() {
+		super();
 		
-		stage = new Stage();
+		Bullet.init();
 		
 		modelBatch = new ModelBatch();
 		environment = new Environment();
@@ -104,10 +105,10 @@ public class RollingDices extends AbstractScreen {
 		
 		cameraInputController = new CameraInputController(camera);
 		
-		inputMultiplexer = new InputMultiplexer();
+		InputMultiplexer inputMultiplexer = new InputMultiplexer();
 		inputMultiplexer.addProcessor(stage);
+		inputMultiplexer.addProcessor(this);
 		inputMultiplexer.addProcessor(cameraInputController);
-		
 		
 		instances = new Array<Helper.GameObject>();
 		
@@ -127,45 +128,19 @@ public class RollingDices extends AbstractScreen {
 		dynamicsWorld.setGravity(new Vector3(0, -10f, 0));
 		contactListener = new Helper.MyContactListener();
 		
+		// Drag and drop
+		selectionMaterial = new Material();
+		selectionMaterial.set(ColorAttribute.createDiffuse(Color.ORANGE));
+		originalMaterial = new Material();
 		
 		// Labels: Ausgabe der Zahlenwerte
-		diceValues = new DiceValues();
-		stage.addActor(diceValues);
-		
-		// Button: neu würfeln
-		Button rollDicesButton = new Button("neu würfeln", Button.ButtonType.NORMAL);
-		rollDicesButton.addListener(new ChangeListener() {
-			@Override
-			public void changed(ChangeEvent event, Actor actor) {
-				if(!loading) {
-					for (int i = 0; i < dices.size; i++) {
-						randomizeDicePosition(i);
-					}
-				}
-			}
-		});
-		rollDicesButton.setSize((Gdx.graphics.getWidth() / 2) - Constants.BUTTONS_PADDING,(Gdx.graphics.getHeight() * Constants.EDGE_HEIGHT_PERCENT) - Constants.BUTTONS_PADDING);
-		rollDicesButton.setPosition(Gdx.graphics.getWidth() - rollDicesButton.getWidth(), 0);
-		stage.addActor(rollDicesButton);
-		
-		// Button: zum Spielplan
-		Button showScorecardButton = new Button("Spielplan anzeigen", Button.ButtonType.NORMAL);
-		showScorecardButton.addListener(new ChangeListener() {
-			@Override
-			public void changed(ChangeEvent event, Actor actor) {
-				DiceValues.saveValues();
-				ScreenManager.showScorecard();
-			}
-		});
-		showScorecardButton.setSize((Gdx.graphics.getWidth() / 2) - Constants.BUTTONS_PADDING,(Gdx.graphics.getHeight() * Constants.EDGE_HEIGHT_PERCENT) - Constants.BUTTONS_PADDING);
-		showScorecardButton.setPosition(0, 0);
-		stage.addActor(showScorecardButton);
+		overlay = new Overlay(stage);
 	}
 	
 	@Override
 	public void show() {
-		Gdx.input.setInputProcessor(inputMultiplexer);
-		diceValues.loadValues();
+		super.show();
+		overlay.show(stage);
 	}
 	
 	private void doneLoading() {
@@ -194,11 +169,12 @@ public class RollingDices extends AbstractScreen {
 			randomizeDicePosition(i);
 			dices.get(i).body.setUserValue(instances.size);
 			dices.get(i).body.setCollisionFlags(dices.get(i).body.getCollisionFlags() | btCollisionObject.CollisionFlags.CF_CUSTOM_MATERIAL_CALLBACK);
-			instances.add(dices.get(i));
 			dynamicsWorld.addRigidBody(dices.get(i).body);
 			dices.get(i).body.setContactCallbackFlag(OBJECT_FLAG);
 			dices.get(i).body.setContactCallbackFilter(GROUND_FLAG);
 		}
+		
+		instances.addAll(dices);
 		
 		
 		Helper.GameObject ground = constructors.get("ground").construct();
@@ -252,6 +228,14 @@ public class RollingDices extends AbstractScreen {
 		dices.get(i).body.proceedToTransform(dices.get(i).transform);
 	}
 	
+	public void rollDices() {
+		if(!loading) {
+			for (int i = 0; i < dices.size; i++) {
+				randomizeDicePosition(i);
+			}
+		}
+	}
+	
 	@Override
 	public void render(float delta) {
 		if (loading && assetManager.update()) {
@@ -294,7 +278,7 @@ public class RollingDices extends AbstractScreen {
 					number = 2;
 				}
 				
-				diceValues.setValue(i, number);
+				overlay.setValue(i, number);
 			}
 		}
 		
@@ -305,12 +289,122 @@ public class RollingDices extends AbstractScreen {
 		modelBatch.render(instances, environment);
 		modelBatch.end();
 		
-		stage.draw();
+		super.render(delta);
 	}
 	
 	@Override
 	public void resize(int width, int height) {
 		stage.getViewport().update(width, height, true);
+	}
+	
+	
+	@Override
+	public boolean touchDown(int screenX, int screenY, int pointer, int button) {
+		Gdx.app.log("TEST", "touchDown");
+		selected = getObject(screenX, screenY);
+		return selected >= 0;
+	}
+	
+	@Override
+	public boolean touchDragged(int screenX, int screenY, int pointer) {
+		if(selected < 0) {
+			return false;
+		}
+//		else if(selected == selecting) {
+			Ray ray = camera.getPickRay(screenX, screenY);
+			final float distance = -ray.origin.y / ray.direction.y;
+			position.set(ray.direction).scl(distance).add(ray.origin);
+			
+			position.y = dices.get(selected).transform.getTranslation(new Vector3()).y;
+			
+			dices.get(selected).transform.setTranslation(position);
+			dices.get(selected).body.proceedToTransform(dices.get(selected).transform);
+//		}
+		return true;
+	}
+	
+	@Override
+	public boolean touchUp(int screenX, int screenY, int pointer, int button) {
+		Gdx.app.log("TEST", "touchUp");
+		if(selected >= 0) {
+			if(selected == getObject(screenX, screenY)) {
+				setSelected(selected);
+			}
+			selected = -1;
+			return true;
+		}
+		return false;
+	}
+	
+	private int getObject(int screenX, int screenY) {
+		Gdx.app.log("TEST", "getObject");
+		Ray ray = camera.getPickRay(screenX, screenY);
+		int result = -1;
+		float distance = -1;
+		
+		for (int i = 0; i < dices.size; ++i) {
+			final Helper.GameObject dice = dices.get(i);
+			dice.transform.getTranslation(position);
+			position.add(dice.center);
+			final float len = ray.direction.dot(position.x-ray.origin.x, position.y-ray.origin.y, position.z-ray.origin.z);
+			if (len < 0f)
+				continue;
+			float dist2 = position.dst2(ray.origin.x+ray.direction.x*len, ray.origin.y+ray.direction.y*len, ray.origin.z+ray.direction.z*len);
+			if (distance >= 0f && dist2 > distance)
+				continue;
+			if (dist2 <= dice.radius * dice.radius) {
+				result = i;
+				distance = dist2;
+			}
+		}
+		
+		return result;
+	}
+	
+	private void setSelected(int value) {
+		Gdx.app.log("TEST", "setSelected");
+		if(selected == value) {
+			return;
+		}
+		if(selected >= 0) {
+			Material material = dices.get(selected).materials.get(0);
+			material.clear();
+			material.set(originalMaterial);
+		}
+		
+		selected = value;
+		if(selected >= 0) {
+			Material material = dices.get(selected).materials.get(0);
+			originalMaterial.clear();
+			originalMaterial.set(material);
+			material.clear();
+			material.set(selectionMaterial);
+		}
+	}
+	
+	@Override
+	public boolean keyDown(int keycode) {
+		return false;
+	}
+	
+	@Override
+	public boolean keyUp(int keycode) {
+		return false;
+	}
+	
+	@Override
+	public boolean keyTyped(char character) {
+		return false;
+	}
+	
+	@Override
+	public boolean mouseMoved(int screenX, int screenY) {
+		return false;
+	}
+	
+	@Override
+	public boolean scrolled(int amount) {
+		return false;
 	}
 	
 	@Override
@@ -330,7 +424,6 @@ public class RollingDices extends AbstractScreen {
 	
 	@Override
 	public void dispose() {
-		stage.dispose();
 		modelBatch.dispose();
 		instances.clear();
 		assetManager.clear();

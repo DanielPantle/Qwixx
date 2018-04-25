@@ -5,7 +5,6 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;
 
 import de.pantle.qwixx.utils.Button;
-import de.pantle.qwixx.utils.DiceValues;
 import de.pantle.qwixx.utils.ScreenManager;
 
 public class Qwixx extends Game {
@@ -14,8 +13,7 @@ public class Qwixx extends Game {
 		// initialisations
 		Button.init();
 		
-		ScreenManager.init(this);
-		ScreenManager.showScorecard();
+		ScreenManager.start(this);
 	}
 	
 	@Override
