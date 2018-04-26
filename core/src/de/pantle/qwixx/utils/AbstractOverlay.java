@@ -18,19 +18,19 @@ import de.pantle.qwixx.singleplayer.RollingDicesSingleplayerScreen;
 
 import static de.pantle.qwixx.utils.Constants.DICE_COLORS;
 
-public class Overlay extends Actor {
+public abstract class AbstractOverlay extends Actor {
 	private Table table;
 	private static Button changeScreenButton;
 	
 	private static Array<Label> outputDiceValues;
 	
 	
-	public Overlay(Stage stage) {
+	public AbstractOverlay(Stage stage) {
 		table = new Table();
 		table.background(new SpriteDrawable(new Sprite(new Texture(Gdx.files.internal(Button.BUTTONS_PATH + Button.ButtonType.STANDARD + Button.FILE_EXTENSION)))));
 		setTableSize();
 		
-		if(outputDiceValues == null) {
+		if (outputDiceValues == null) {
 			outputDiceValues = new Array<Label>();
 			
 			FileHandle fontFile = Gdx.files.internal("Comfortaa.ttf");
@@ -52,16 +52,10 @@ public class Overlay extends Actor {
 		rollDicesButton.addListener(new ChangeListener() {
 			@Override
 			public void changed(ChangeEvent event, Actor actor) {
-				if(ScreenManager.getScreen().getClass() == RollingDicesSingleplayerScreen.class) {
-					ScreenManager.getRollingDicesSingleplayerScreen().rollDices();
-				}
-				else {
-					ScreenManager.changeScreen();
-					ScreenManager.getRollingDicesSingleplayerScreen().rollDices();
-				}
+				rollDicesButtonCalled();
 			}
 		});
-		rollDicesButton.setSize((Gdx.graphics.getWidth() / 2) - Constants.BUTTONS_PADDING,(Gdx.graphics.getHeight() * Constants.EDGE_HEIGHT_PERCENT) - Constants.BUTTONS_PADDING);
+		rollDicesButton.setSize((Gdx.graphics.getWidth() / 2) - Constants.BUTTONS_PADDING, (Gdx.graphics.getHeight() * Constants.EDGE_HEIGHT_PERCENT) - Constants.BUTTONS_PADDING);
 		rollDicesButton.setPosition(Gdx.graphics.getWidth() - rollDicesButton.getWidth(), 0);
 		
 		// Button: zum Spielplan
@@ -72,12 +66,14 @@ public class Overlay extends Actor {
 				ScreenManager.changeScreen();
 			}
 		});
-		changeScreenButton.setSize((Gdx.graphics.getWidth() / 2) - Constants.BUTTONS_PADDING,(Gdx.graphics.getHeight() * Constants.EDGE_HEIGHT_PERCENT) - Constants.BUTTONS_PADDING);
+		changeScreenButton.setSize((Gdx.graphics.getWidth() / 2) - Constants.BUTTONS_PADDING, (Gdx.graphics.getHeight() * Constants.EDGE_HEIGHT_PERCENT) - Constants.BUTTONS_PADDING);
 		changeScreenButton.setPosition(0, 0);
 		
 		stage.addActor(rollDicesButton);
 		stage.addActor(changeScreenButton);
 	}
+	
+	public abstract void rollDicesButtonCalled();
 	
 	@Override
 	public void draw(Batch batch, float parentAlpha) {
@@ -105,7 +101,7 @@ public class Overlay extends Actor {
 	}
 	
 	public void setValue(int i, int number) {
-		if(number == 0) {
+		if (number == 0) {
 			outputDiceValues.get(i).setText("?");
 		}
 		else {

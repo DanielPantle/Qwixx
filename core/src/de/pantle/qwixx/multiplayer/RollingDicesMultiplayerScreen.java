@@ -1,4 +1,4 @@
-package de.pantle.qwixx.singleplayer;
+package de.pantle.qwixx.multiplayer;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputMultiplexer;
@@ -46,7 +46,7 @@ import de.pantle.qwixx.utils.Helper;
  * Created by Daniel on 05.04.2018.
  */
 
-public class RollingDicesSingleplayerScreen extends AbstractScreen implements InputProcessor {
+public class RollingDicesMultiplayerScreen extends AbstractScreen implements InputProcessor {
 	
 	private final static short GROUND_FLAG = 1 << 8;
 	private final static short OBJECT_FLAG = 1 << 9;
@@ -71,7 +71,7 @@ public class RollingDicesSingleplayerScreen extends AbstractScreen implements In
 	private btConstraintSolver constraintSolver;
 	
 	private Array<Helper.GameObject> dices;
-	private SingleplayerOverlay singleplayerOverlay;
+	private MultiplayerOverlay multiplayerOverlay;
 	private ArrayMap<String, Helper.GameObject.Constructor> constructors;
 	
 	// Drag and drop
@@ -80,7 +80,7 @@ public class RollingDicesSingleplayerScreen extends AbstractScreen implements In
 	private Material originalMaterial;
 	private Vector3 position = new Vector3();
 	
-	public RollingDicesSingleplayerScreen() {
+	public RollingDicesMultiplayerScreen() {
 		super();
 		
 		Bullet.init();
@@ -128,13 +128,13 @@ public class RollingDicesSingleplayerScreen extends AbstractScreen implements In
 		originalMaterial = new Material();
 		
 		// Labels: Ausgabe der Zahlenwerte
-		singleplayerOverlay = new SingleplayerOverlay(stage);
+		multiplayerOverlay = new MultiplayerOverlay(stage);
 	}
 	
 	@Override
 	public void show() {
 		super.show();
-		singleplayerOverlay.show(stage);
+		multiplayerOverlay.show(stage);
 	}
 	
 	private void doneLoading() {
@@ -272,7 +272,7 @@ public class RollingDicesSingleplayerScreen extends AbstractScreen implements In
 					number = 2;
 				}
 				
-				singleplayerOverlay.setValue(i, number);
+				multiplayerOverlay.setValue(i, number);
 			}
 		}
 		

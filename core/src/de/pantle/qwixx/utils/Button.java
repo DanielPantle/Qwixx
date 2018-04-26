@@ -64,7 +64,7 @@ public class Button extends TextButton {
 	
 	public static final String BUTTONS_PATH = "buttons/";
 	public static final String FILE_EXTENSION = ".png";
-	public static final String BUTTONS_ATLAS = "buttons.atlas";
+	private static final String BUTTONS_ATLAS = "buttons.atlas";
 	
 	private static HashMap<ButtonType, TextButtonStyle> textButtonStyles;
 	private static TextureAtlas textureAtlas;
