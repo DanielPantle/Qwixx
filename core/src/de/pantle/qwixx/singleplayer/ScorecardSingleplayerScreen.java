@@ -8,23 +8,21 @@ import de.pantle.qwixx.utils.Scorecard;
  */
 
 public class ScorecardSingleplayerScreen extends AbstractScreen {
-	private SingleplayerOverlay singleplayerOverlay;
-	
 	public ScorecardSingleplayerScreen() {
 		super();
 		
+		// SingleplayerOverlay initialisieren
+		new SingleplayerOverlay();
+		
 		// Scorecard anzeigen
 		new Scorecard(stage);
-		
-		// SingleplayerOverlay: Ausgabe der Zahlenwerte
-		singleplayerOverlay = new SingleplayerOverlay(stage);
 	}
 	
 	
 	@Override
 	public void show() {
 		super.show();
-		singleplayerOverlay.show(stage);
+		SingleplayerOverlay.getInstance().show(stage);
 	}
 	
 	@Override
@@ -36,6 +34,6 @@ public class ScorecardSingleplayerScreen extends AbstractScreen {
 	public void resize(int width, int height) {
 		stage.getViewport().update(width, height, true);
 		
-		singleplayerOverlay.resize();
+		SingleplayerOverlay.resize();
 	}
 }

@@ -1,12 +1,15 @@
 package de.pantle.qwixx.utils;
 
 import com.badlogic.gdx.Game;
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 
 import de.pantle.qwixx.StartScreen;
+import de.pantle.qwixx.multiplayer.AbstractScorecardMultiplayerScreen;
 import de.pantle.qwixx.multiplayer.MultiplayerOverlay;
-import de.pantle.qwixx.multiplayer.ScorecardMultiplayerScreen;
 import de.pantle.qwixx.multiplayer.RollingDicesMultiplayerScreen;
+import de.pantle.qwixx.multiplayer.ScorecardMultiplayerClientScreen;
+import de.pantle.qwixx.multiplayer.ScorecardMultiplayerServerScreen;
 import de.pantle.qwixx.multiplayer.StartMultiplayerScreen;
 import de.pantle.qwixx.singleplayer.RollingDicesSingleplayerScreen;
 import de.pantle.qwixx.singleplayer.ScorecardSingleplayerScreen;
@@ -25,43 +28,38 @@ public class ScreenManager {
 	
 	// Multiplayer-Screens
 	private static StartMultiplayerScreen startMultiplayerScreen;
-	private static ScorecardMultiplayerScreen scorecardMultiplayerScreen;
+	private static AbstractScorecardMultiplayerScreen scorecardMultiplayerScreen;
 	private static RollingDicesMultiplayerScreen rollingDicesMultiplayerScreen;
 	
 	
 	public static void start(Game g) {
 		game = g;
 		
-		// init screens
+		// init start screen
 		StartScreen startScreen = new StartScreen();
-		
-		
 		
 		game.setScreen(startScreen);
 	}
 	
-	public static void changeScreen() {
-		if(scorecardSingleplayerScreen == null) {
-			// Multiplayer-Spiel
-			if (game.getScreen().getClass() == ScorecardMultiplayerScreen.class) {
-				game.setScreen(rollingDicesMultiplayerScreen);
-				MultiplayerOverlay.setButtonText("Spielplan anzeigen");
-			}
-			else {
-				game.setScreen(scorecardMultiplayerScreen);
-				MultiplayerOverlay.setButtonText("Würfel anzeigen");
-			}
+	public static void changeScreenMultiplayer() {
+		if (game.getScreen().getClass() == ScorecardMultiplayerServerScreen.class) {
+			game.setScreen(rollingDicesMultiplayerScreen);
+			MultiplayerOverlay.setButtonText("Spielplan anzeigen");
 		}
 		else {
-			// Singleplayer-Spiel
-			if (game.getScreen().getClass() == ScorecardSingleplayerScreen.class) {
-				game.setScreen(rollingDicesSingleplayerScreen);
-				SingleplayerOverlay.setButtonText("Spielplan anzeigen");
-			}
-			else {
-				game.setScreen(scorecardSingleplayerScreen);
-				SingleplayerOverlay.setButtonText("Würfel anzeigen");
-			}
+			game.setScreen(scorecardMultiplayerScreen);
+			MultiplayerOverlay.setButtonText("Würfel anzeigen");
+		}
+	}
+	
+	public static void changeScreenSingleplayer() {
+		if (game.getScreen().getClass() == ScorecardSingleplayerScreen.class) {
+			game.setScreen(rollingDicesSingleplayerScreen);
+			SingleplayerOverlay.setButtonText("Spielplan anzeigen");
+		}
+		else {
+			game.setScreen(scorecardSingleplayerScreen);
+			SingleplayerOverlay.setButtonText("Würfel anzeigen");
 		}
 	}
 	
@@ -69,13 +67,29 @@ public class ScreenManager {
 		return game.getScreen();
 	}
 	
-	public static void showScorecardMultiplayerScreen() {
-		game.setScreen(scorecardMultiplayerScreen);
+	public static void showScorecardScreen(final boolean isServer) {
+		Gdx.app.postRunnable(new Runnable() {
+			@Override
+			public void run() {
+				if (scorecardMultiplayerScreen == null) {
+					if (isServer) {
+						scorecardMultiplayerScreen = new ScorecardMultiplayerServerScreen();
+					}
+					else {
+						scorecardMultiplayerScreen = new ScorecardMultiplayerClientScreen();
+					}
+				}
+				
+				game.setScreen(scorecardMultiplayerScreen);
+				startMultiplayerScreen.dispose();
+			}
+		});
 	}
 	
-	public static RollingDicesSingleplayerScreen getRollingDicesSingleplayerScreen() {
+	public static AbstractRollingDicesScreen getRollingDicesSingleplayerScreen() {
 		return rollingDicesSingleplayerScreen;
 	}
+	
 	public static RollingDicesMultiplayerScreen getRollingDicesMultiplayerScreen() {
 		return rollingDicesMultiplayerScreen;
 	}
@@ -89,7 +103,6 @@ public class ScreenManager {
 	
 	public static void startMultiplayer() {
 		startMultiplayerScreen = new StartMultiplayerScreen();
-		scorecardMultiplayerScreen = new ScorecardMultiplayerScreen();
 		rollingDicesMultiplayerScreen = new RollingDicesMultiplayerScreen();
 		game.setScreen(startMultiplayerScreen);
 	}

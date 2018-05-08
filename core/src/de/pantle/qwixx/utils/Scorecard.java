@@ -28,9 +28,16 @@ public class Scorecard {
 		for (int row = 0; row < Constants.COLORS_COUNT; row++) {
 			ArrayList<Button> colorRowButtons = new ArrayList<Button>();
 			
+			int number;
 			// Felder hinzufügen
 			for (int i = 2; i <= Constants.BUTTONS_PER_COLOR_COUNT + 1; i++) {
-				Button colorButton = new Button(String.valueOf(i), Button.ButtonType.values()[row]);
+				if (row < Constants.COLORS_COUNT / 2) {
+					number = i;
+				}
+				else {
+					number = 14 - i;
+				}
+				Button colorButton = new Button(String.valueOf(number), Button.ButtonType.values()[row]);
 				colorButton.setSize(buttonSize, buttonSize);
 				
 				if (i == Constants.BUTTONS_PER_COLOR_COUNT + 1) {
@@ -148,6 +155,7 @@ public class Scorecard {
 							}
 						}
 						
+						
 						// Felder links davon deaktivieren
 						for (int i = buttons.get(row).indexOf(button) - 1; i >= 0; i--) {
 							buttons.get(row).get(i).setDisabled(true);
@@ -156,8 +164,10 @@ public class Scorecard {
 							}
 						}
 					}
-					if (button.getText().toString().equals("12")) {
-						// Feld 12
+					
+					// Feld 12
+					if ((row < Constants.COLORS_COUNT / 2 && button.getText().toString().equals("12"))
+							|| (row >= Constants.COLORS_COUNT / 2 && button.getText().toString().equals("2"))) {
 						
 						if (button.isChecked()) {
 							// Feld ist nicht angekreuzt - prüfen, ob Feld angekreuzt werden kann

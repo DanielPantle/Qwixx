@@ -11,8 +11,6 @@ public class GameServer {
 	private static Server server;
 	private static de.pantle.qwixx.networking.NetworkListener networkListener;
 	
-	private static boolean serverRunning = false;
-	
 	private static void init() {
 		// init and start server
 		server = new Server();
@@ -35,6 +33,7 @@ public class GameServer {
 			public void received(Connection connection, Object object) {
 				// message from client received
 				if (object instanceof Message) {
+					Gdx.app.log("GameServer", "received: " + ((Message) object).getType());
 					networkListener.onReceived(connection, (Message) object);
 				}
 			}
@@ -44,22 +43,10 @@ public class GameServer {
 		Message.registerClasses(server);
 	}
 	
-	public static void setNetworkListener(de.pantle.qwixx.networking.NetworkListener networkListener) {
+	public static void setNetworkListener(NetworkListener networkListener) {
 		GameServer.networkListener = networkListener;
 	}
 	
-	/*
-	public static void sendToClient(int connectionId, Message.MessageType messageType) {
-		server.sendToTCP(connectionId, new Message(messageType));
-	}
-	public static void sendToClient(int connectionId, Message.MessageType messageType, Object object) {
-		server.sendToTCP(connectionId, new Message(messageType, object));
-	}
-	*/
-	
-	public static void sendMessage(Message message) {
-		server.sendToAllTCP(message);
-	}
 	
 	public static void start() {
 		if (server == null) {
@@ -88,7 +75,7 @@ public class GameServer {
 		}).start();
 	}
 	
-	public static int getConnectedClientsCount() {
-		return server.getConnections().length;
+	public static Server getServer() {
+		return server;
 	}
 }

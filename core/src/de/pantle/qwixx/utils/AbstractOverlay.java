@@ -8,24 +8,25 @@ import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.SpriteDrawable;
 import com.badlogic.gdx.utils.Array;
 
-import de.pantle.qwixx.singleplayer.RollingDicesSingleplayerScreen;
-
 import static de.pantle.qwixx.utils.Constants.DICE_COLORS;
 
 public abstract class AbstractOverlay extends Actor {
-	private Table table;
+	protected static AbstractOverlay instance;
+	
+	private static Table table;
 	private static Button changeScreenButton;
+	private static Button rollDicesButton;
 	
 	private static Array<Label> outputDiceValues;
 	
-	
-	public AbstractOverlay(Stage stage) {
+	public AbstractOverlay() {
 		table = new Table();
 		table.background(new SpriteDrawable(new Sprite(new Texture(Gdx.files.internal(Button.BUTTONS_PATH + Button.ButtonType.STANDARD + Button.FILE_EXTENSION)))));
 		setTableSize();
@@ -48,32 +49,46 @@ public abstract class AbstractOverlay extends Actor {
 		}
 		
 		// Button: neu würfeln
-		Button rollDicesButton = new Button("neu würfeln", Button.ButtonType.STANDARD);
+		rollDicesButton = new Button("neu würfeln", Button.ButtonType.STANDARD);
 		rollDicesButton.addListener(new ChangeListener() {
 			@Override
 			public void changed(ChangeEvent event, Actor actor) {
-				rollDicesButtonCalled();
+				instance.rollDicesButtonClicked();
 			}
 		});
 		rollDicesButton.setSize((Gdx.graphics.getWidth() / 2) - Constants.BUTTONS_PADDING, (Gdx.graphics.getHeight() * Constants.EDGE_HEIGHT_PERCENT) - Constants.BUTTONS_PADDING);
 		rollDicesButton.setPosition(Gdx.graphics.getWidth() - rollDicesButton.getWidth(), 0);
 		
-		// Button: zum Spielplan
+		// Button: Screen wechseln
 		changeScreenButton = new Button("Würfel anzeigen", Button.ButtonType.STANDARD);
 		changeScreenButton.addListener(new ChangeListener() {
 			@Override
 			public void changed(ChangeEvent event, Actor actor) {
-				ScreenManager.changeScreen();
+				instance.changeScreenButtonClicked();
 			}
 		});
 		changeScreenButton.setSize((Gdx.graphics.getWidth() / 2) - Constants.BUTTONS_PADDING, (Gdx.graphics.getHeight() * Constants.EDGE_HEIGHT_PERCENT) - Constants.BUTTONS_PADDING);
 		changeScreenButton.setPosition(0, 0);
+	}
+	
+	protected abstract void changeScreenButtonClicked();
+	
+	protected abstract void rollDicesButtonClicked();
+	
+	protected void show(Stage stage) {
+		table.clear();
+		setTableSize();
 		
+		// Würfel-Werte laden und ausgeben
+		for (int i = 0; i < Constants.DICE_COLORS.size; i++) {
+			table.add(outputDiceValues.get(i)).width(table.getWidth() / 3 * 2 / (DICE_COLORS.size + 2));
+		}
+		
+		// Tabelle und Buttons anzeigen
+		stage.addActor(table);
 		stage.addActor(rollDicesButton);
 		stage.addActor(changeScreenButton);
 	}
-	
-	public abstract void rollDicesButtonCalled();
 	
 	@Override
 	public void draw(Batch batch, float parentAlpha) {
@@ -81,26 +96,16 @@ public abstract class AbstractOverlay extends Actor {
 	}
 	
 	
-	// lädt die Werte aus und setzt die Labels
-	public void show(Stage stage) {
-		setTableSize();
-		table.clear();
-		for (int i = 0; i < Constants.DICE_COLORS.size; i++) {
-			table.add(outputDiceValues.get(i)).width(table.getWidth() / 3 * 2 / (DICE_COLORS.size + 2));
-		}
-		stage.addActor(table);
-	}
-	
 	public static void setButtonText(String text) {
 		changeScreenButton.setText(text);
 	}
 	
-	private void setTableSize() {
+	private static void setTableSize() {
 		table.setSize(Gdx.graphics.getWidth(), (Gdx.graphics.getHeight() * Constants.EDGE_HEIGHT_PERCENT) - Constants.BUTTONS_PADDING);
 		table.setPosition((Gdx.graphics.getWidth() - table.getWidth()) / 2, Gdx.graphics.getHeight() - table.getHeight());
 	}
 	
-	public void setValue(int i, int number) {
+	public static void setValue(int i, int number) {
 		if (number == 0) {
 			outputDiceValues.get(i).setText("?");
 		}
@@ -109,7 +114,17 @@ public abstract class AbstractOverlay extends Actor {
 		}
 	}
 	
-	public void resize() {
+	public static void resize() {
 		setTableSize();
+	}
+	
+	public static void enableButtons() {
+		rollDicesButton.setTouchable(Touchable.enabled);
+		changeScreenButton.setTouchable(Touchable.enabled);
+	}
+	
+	public static void disableButtons() {
+		rollDicesButton.setTouchable(Touchable.disabled);
+		changeScreenButton.setTouchable(Touchable.disabled);
 	}
 }

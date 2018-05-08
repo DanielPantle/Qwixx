@@ -34,7 +34,8 @@ public class StartMultiplayerScreen extends AbstractScreen implements NetworkLis
 		stage.addActor(table);
 		
 		// Server und Client initialisieren
-		ConnectionHelper.init(this);
+		GameServer.setNetworkListener(this);
+		GameClient.setNetworkListener(this);
 	}
 	
 	private void showStartGameButton() {
@@ -42,8 +43,8 @@ public class StartMultiplayerScreen extends AbstractScreen implements NetworkLis
 		showStartGameButton.addListener(new ChangeListener() {
 			@Override
 			public void changed(ChangeEvent event, Actor actor) {
-				GameServer.sendMessage(new Message(Message.MessageType.START_GAME));
-				ScreenManager.showScorecardMultiplayerScreen();
+				ConnectionHelper.sendMessageFromServer(new Message(Message.MessageType.START_GAME));
+				ScreenManager.showScorecardScreen(true);
 			}
 		});
 		table.row().pad(20);
@@ -56,7 +57,7 @@ public class StartMultiplayerScreen extends AbstractScreen implements NetworkLis
 		
 		// Versuch, mit Server zu verbinden
 		setOutput("Verbindung wird hergestellt...");
-		GameClient.connect();
+		ConnectionHelper.connectClient();
 	}
 	
 	private void setOutput(String message) {
@@ -67,7 +68,7 @@ public class StartMultiplayerScreen extends AbstractScreen implements NetworkLis
 	@Override
 	public void onClientConnected(Connection connection) {
 		Gdx.app.log(getClass().getSimpleName(), "onConnected");
-		setOutput(GameServer.getConnectedClientsCount() + " Client(s) verbunden");
+		setOutput(ConnectionHelper.getConnectedClientsCount() + " Client(s) verbunden");
 	}
 	
 	@Override
@@ -79,15 +80,14 @@ public class StartMultiplayerScreen extends AbstractScreen implements NetworkLis
 	@Override
 	public void onClientDisconnected(Connection connection) {
 		Gdx.app.log(getClass().getSimpleName(), "onClientDisconnected");
-		setOutput(GameServer.getConnectedClientsCount() + " Client(s) verbunden");
+		setOutput(ConnectionHelper.getConnectedClientsCount() + " Client(s) verbunden");
 	}
 	
 	@Override
 	public void onReceived(Connection connection, Message message) {
-		Gdx.app.log(getClass().getSimpleName(), "onReceived");
-		Gdx.app.log(getClass().getSimpleName(), "Message type: " + message.getType());
+		Gdx.app.log(getClass().getSimpleName(), "onReceived: " + message.getType());
 		if (message.getType() == Message.MessageType.START_GAME) {
-			ScreenManager.showScorecardMultiplayerScreen();
+			ScreenManager.showScorecardScreen(false);
 		}
 	}
 	
@@ -95,14 +95,14 @@ public class StartMultiplayerScreen extends AbstractScreen implements NetworkLis
 	public void onStartingServerFailed() {
 		Gdx.app.log(getClass().getSimpleName(), "onStartingServerFailed");
 		setOutput("Starten des Servers fehlgeschlagen");
-		GameClient.connect();
+		ConnectionHelper.connectClient();
 	}
 	
 	@Override
 	public void onServerDisconnected(Connection connection) {
 		Gdx.app.log(getClass().getSimpleName(), "onStartingServerFailed");
 		setOutput("Serververbindung abgebrochen");
-		GameClient.connect();
+		ConnectionHelper.connectClient();
 	}
 	
 	@Override
@@ -116,6 +116,6 @@ public class StartMultiplayerScreen extends AbstractScreen implements NetworkLis
 	public void onConnectingFailed() {
 		Gdx.app.log(getClass().getSimpleName(), "onConnectingFailed");
 		setOutput("Verbinden mit Server fehlgeschlagen");
-		GameServer.start();
+		ConnectionHelper.startServer();
 	}
 }

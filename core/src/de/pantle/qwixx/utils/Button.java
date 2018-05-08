@@ -3,14 +3,12 @@ package de.pantle.qwixx.utils;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
-import com.badlogic.gdx.utils.Array;
 
 import java.util.HashMap;
 
@@ -36,11 +34,13 @@ public class Button extends TextButton {
 			this.down = up;
 			this.checked = up;
 		}
+		
 		ButtonType(String up, String checked) {
 			this.up = up;
 			this.down = up;
 			this.checked = checked;
 		}
+		
 		ButtonType(String up, String down, String checked) {
 			this.up = up;
 			this.down = down;
@@ -54,9 +54,11 @@ public class Button extends TextButton {
 		public String getUp() {
 			return up;
 		}
+		
 		public String getChecked() {
 			return checked;
 		}
+		
 		public String getDown() {
 			return down;
 		}
@@ -81,6 +83,7 @@ public class Button extends TextButton {
 	public static void init() {
 		init(Color.BLACK);
 	}
+	
 	private static void init(Color color) {
 		FileHandle fontFile = Gdx.files.internal("Comfortaa.ttf");
 		FreeTypeFontGenerator generator = new FreeTypeFontGenerator(fontFile);

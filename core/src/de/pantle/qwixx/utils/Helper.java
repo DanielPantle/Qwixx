@@ -19,8 +19,8 @@ public class Helper {
 	
 	public static class MyContactListener extends ContactListener {
 		@Override
-		public boolean onContactAdded (int userValue0, int partId0, int index0, boolean match0, int userValue1, int partId1,
-									   int index1, boolean match1) {
+		public boolean onContactAdded(int userValue0, int partId0, int index0, boolean match0, int userValue1, int partId1,
+									  int index1, boolean match1) {
 			
 			return true;
 		}
@@ -30,12 +30,12 @@ public class Helper {
 		Matrix4 transform;
 		
 		@Override
-		public void getWorldTransform (Matrix4 worldTrans) {
+		public void getWorldTransform(Matrix4 worldTrans) {
 			worldTrans.set(transform);
 		}
 		
 		@Override
-		public void setWorldTransform (Matrix4 worldTrans) {
+		public void setWorldTransform(Matrix4 worldTrans) {
 			transform.set(worldTrans);
 		}
 	}
@@ -50,7 +50,7 @@ public class Helper {
 		public final Vector3 dimensions = new Vector3();
 		public final float radius;
 		
-		public GameObject (Model model, String node, btRigidBody.btRigidBodyConstructionInfo constructionInfo) {
+		public GameObject(Model model, String node, btRigidBody.btRigidBodyConstructionInfo constructionInfo) {
 			super(model, node);
 			calculateBoundingBox(bounds);
 			bounds.getCenter(center);
@@ -64,7 +64,7 @@ public class Helper {
 		}
 		
 		@Override
-		public void dispose () {
+		public void dispose() {
 			body.dispose();
 			motionState.dispose();
 		}
@@ -76,7 +76,7 @@ public class Helper {
 			public final btRigidBody.btRigidBodyConstructionInfo constructionInfo;
 			private static Vector3 localInertia = new Vector3();
 			
-			public Constructor (Model model, String node, btCollisionShape shape, float mass) {
+			public Constructor(Model model, String node, btCollisionShape shape, float mass) {
 				this.model = model;
 				this.node = node;
 				this.shape = shape;
@@ -87,12 +87,12 @@ public class Helper {
 				this.constructionInfo = new btRigidBody.btRigidBodyConstructionInfo(mass, null, shape, localInertia);
 			}
 			
-			public GameObject construct () {
+			public GameObject construct() {
 				return new GameObject(model, node, constructionInfo);
 			}
 			
 			@Override
-			public void dispose () {
+			public void dispose() {
 				shape.dispose();
 				constructionInfo.dispose();
 			}

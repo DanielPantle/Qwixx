@@ -10,7 +10,7 @@ import com.esotericsoftware.kryonet.Server;
 
 public class Message {
 	public enum MessageType {
-		START_GAME
+		MOVE_FINISHED, NEXT_PLAYER, START_GAME
 	}
 	
 	private MessageType type;
@@ -41,6 +41,7 @@ public class Message {
 	public static void registerClasses(Server server) {
 		registerClasses(server.getKryo());
 	}
+	
 	public static void registerClasses(Client client) {
 		registerClasses(client.getKryo());
 	}
