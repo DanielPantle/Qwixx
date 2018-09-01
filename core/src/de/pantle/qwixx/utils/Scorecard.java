@@ -10,12 +10,13 @@ import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import java.util.ArrayList;
 
 public class Scorecard {
+	private Table table;
 	private ArrayList<ArrayList<Button>> buttons;
 	
 	public Scorecard(Stage stage) {
 		
 		// Tabelle initialisieren
-		Table table = new Table();
+		table = new Table();
 		table.setSize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight() - (Gdx.graphics.getHeight() * Constants.EDGE_HEIGHT_PERCENT * 2));
 		table.setPosition(0, Gdx.graphics.getHeight() * Constants.EDGE_HEIGHT_PERCENT);
 		
@@ -27,6 +28,9 @@ public class Scorecard {
 		// Felder für die 4 Farben hinzufügen
 		for (int row = 0; row < Constants.COLORS_COUNT; row++) {
 			ArrayList<Button> colorRowButtons = new ArrayList<Button>();
+			
+			Table rowTable = new Table();
+			rowTable.setWidth(table.getWidth());
 			
 			int number;
 			// Felder hinzufügen
@@ -52,12 +56,14 @@ public class Scorecard {
 					}
 				});
 				
-				table.add(colorButton).size(buttonSize).pad(5);
+				//table.add(colorButton).size(buttonSize).pad(5);
+				rowTable.add(colorButton).size(buttonSize).pad(5);
 				
 				colorRowButtons.add(colorButton);
 			}
 			
 			buttons.add(colorRowButtons);
+			table.add(rowTable);
 			table.row();
 		}
 		
@@ -155,17 +161,13 @@ public class Scorecard {
 							}
 						}
 						
-						
 						// Felder links davon deaktivieren
 						for (int i = buttons.get(row).indexOf(button) - 1; i >= 0; i--) {
 							buttons.get(row).get(i).setDisabled(true);
-							if (buttons.get(row).get(i).isChecked()) {
-								buttons.get(row).get(i).getStyle().down = buttons.get(row).get(i).getStyle().checked;
-							}
 						}
 					}
 					
-					// Feld 12
+					// Feld 12 / 2 angekreuzt
 					if ((row < Constants.COLORS_COUNT / 2 && button.getText().toString().equals("12"))
 							|| (row >= Constants.COLORS_COUNT / 2 && button.getText().toString().equals("2"))) {
 						
@@ -186,13 +188,13 @@ public class Scorecard {
 							else {
 								// +-Felder mit-ankreuzen
 								buttons.get(row).get(buttons.get(row).size() - 1).setChecked(true);
-								buttons.get(row).get(buttons.get(row).size() - 1).getStyle().down = buttons.get(row).get(buttons.get(row).size() - 1).getStyle().checked;
+								buttons.get(row).get(buttons.get(row).size() - 1).setDown(buttons.get(row).get(buttons.get(row).size() - 1).getStyle().checked);
 							}
 						}
 						else {
 							// Feld ist angekreuzt - Kreuz auf +-Feld mit-entfernen
 							buttons.get(row).get(buttons.get(row).size() - 1).setChecked(false);
-							buttons.get(row).get(buttons.get(row).size() - 1).getStyle().down = buttons.get(row).get(buttons.get(row).size() - 1).getStyle().up;
+							buttons.get(row).get(buttons.get(row).size() - 1).setDown(buttons.get(row).get(buttons.get(row).size() - 1).getStyle().up);
 						}
 					}
 					
@@ -215,8 +217,10 @@ public class Scorecard {
 							+ Integer.parseInt(buttons.get(5).get(8).getText().toString());
 					buttons.get(5).get(10).setText(String.valueOf(res));
 					
+					
 					// Schleife abbrechen, Button wurde gefunden
 					break;
+
 				}
 			}
 		}

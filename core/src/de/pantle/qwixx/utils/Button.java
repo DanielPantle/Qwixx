@@ -3,13 +3,16 @@ package de.pantle.qwixx.utils;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 
+import java.io.Console;
 import java.util.HashMap;
 
 /**
@@ -85,6 +88,7 @@ public class Button extends TextButton {
 	}
 	
 	private static void init(Color color) {
+		/*
 		FileHandle fontFile = Gdx.files.internal("Comfortaa.ttf");
 		FreeTypeFontGenerator generator = new FreeTypeFontGenerator(fontFile);
 		FreeTypeFontGenerator.FreeTypeFontParameter parameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
@@ -92,6 +96,15 @@ public class Button extends TextButton {
 		parameter.color = color;
 		font = generator.generateFont(parameter);
 		generator.dispose();
+		//font.getRegion().getTexture().setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+		font.getRegion().getTexture().setFilter(Texture.TextureFilter.MipMapLinearLinear, Texture.TextureFilter.MipMapLinearLinear);
+		*/
+		
+		Texture texture = new Texture(Gdx.files.internal("font.png"), true); // true enables mipmaps
+		texture.setFilter(Texture.TextureFilter.MipMapLinearNearest, Texture.TextureFilter.Linear); // linear filtering in nearest mipmap image
+		font = new BitmapFont(Gdx.files.internal("font.fnt"), new TextureRegion(texture), false);
+		font = new BitmapFont(Gdx.files.internal("font2.fnt"));
+		font.setColor(color);
 		
 		textureAtlas = new TextureAtlas(Gdx.files.internal(BUTTONS_PATH + BUTTONS_ATLAS));
 		
@@ -105,4 +118,15 @@ public class Button extends TextButton {
 		textureAtlas.dispose();
 		font.dispose();
 	}
+	
+	public void setUp(Drawable up) {
+		getStyle().up = up;
+	}
+	public void setDown(Drawable down) {
+		getStyle().down = down;
+	}
+	public void setChecked(Drawable checked) {
+		getStyle().checked = checked;
+	}
 }
+

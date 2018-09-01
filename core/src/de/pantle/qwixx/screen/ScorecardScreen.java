@@ -1,28 +1,29 @@
-package de.pantle.qwixx.singleplayer;
+package de.pantle.qwixx.screen;
 
-import de.pantle.qwixx.utils.AbstractScreen;
 import de.pantle.qwixx.utils.Scorecard;
 
 /**
  * Created by Daniel on 03.02.2018.
  */
 
-public class ScorecardSingleplayerScreen extends AbstractScreen {
-	public ScorecardSingleplayerScreen() {
+public class ScorecardScreen extends AbstractScreen {
+	private Scorecard scorecard;
+	
+	public ScorecardScreen() {
 		super();
 		
-		// SingleplayerOverlay initialisieren
-		new SingleplayerOverlay();
+		// Overlay initialisieren
+		new Overlay();
 		
 		// Scorecard anzeigen
-		new Scorecard(stage);
+		scorecard = new Scorecard(stage);
 	}
 	
 	
 	@Override
 	public void show() {
 		super.show();
-		SingleplayerOverlay.getInstance().show(stage);
+		Overlay.getInstance().show(stage);
 	}
 	
 	@Override
@@ -34,6 +35,6 @@ public class ScorecardSingleplayerScreen extends AbstractScreen {
 	public void resize(int width, int height) {
 		stage.getViewport().update(width, height, true);
 		
-		SingleplayerOverlay.resize();
+		Overlay.resize();
 	}
 }

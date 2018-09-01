@@ -1,51 +1,58 @@
-package de.pantle.qwixx.utils;
+package de.pantle.qwixx.screen;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.files.FileHandle;
+import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.Sprite;
-import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
+import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.Touchable;
-import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.SpriteDrawable;
+import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Array;
+
+import de.pantle.qwixx.utils.Button;
+import de.pantle.qwixx.utils.Constants;
+import de.pantle.qwixx.utils.ScreenManager;
 
 import static de.pantle.qwixx.utils.Constants.DICE_COLORS;
 
-public abstract class AbstractOverlay extends Actor {
-	protected static AbstractOverlay instance;
+public class Overlay extends Actor {
+	private static Overlay instance;
 	
 	private static Table table;
 	private static Button changeScreenButton;
 	private static Button rollDicesButton;
 	
-	private static Array<Label> outputDiceValues;
+	private static Array<Image> outputDiceImages;
+	private static Array<Integer> outputDiceValues;
+	private static TextureAtlas diceAtlas;
 	
-	public AbstractOverlay() {
+	public Overlay() {
 		table = new Table();
-		table.background(new SpriteDrawable(new Sprite(new Texture(Gdx.files.internal(Button.BUTTONS_PATH + Button.ButtonType.STANDARD + Button.FILE_EXTENSION)))));
+		table.background(new SpriteDrawable(new Sprite(new Texture(Gdx.files.internal(Button.BUTTONS_PATH + Button.ButtonType.STANDARD.getUp() + Button.FILE_EXTENSION)))));
 		setTableSize();
 		
-		if (outputDiceValues == null) {
-			outputDiceValues = new Array<Label>();
+		// obere Anzeige der Würfel-Ergebnisse
+		if(outputDiceImages == null) {
+			outputDiceImages = new Array<Image>();
+			outputDiceValues = new Array<Integer>();
 			
-			FileHandle fontFile = Gdx.files.internal("Comfortaa.ttf");
-			FreeTypeFontGenerator fontGenerator = new FreeTypeFontGenerator(fontFile);
-			FreeTypeFontGenerator.FreeTypeFontParameter parameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
-			parameter.size = 50;
+			AssetManager assetManager = new AssetManager();
+			assetManager.load(Constants.DICE_ATLAS_PATH, TextureAtlas.class);
+			assetManager.finishLoading();
 			
-			for (int i = 0; i < Constants.DICE_COLORS.size; i++) {
-				parameter.color = DICE_COLORS.get(i);
-				outputDiceValues.add(new Label("?", new Label.LabelStyle(fontGenerator.generateFont(parameter), DICE_COLORS.get(i))));
-				table.add(outputDiceValues.get(i)).width(table.getWidth() / 3 * 2 / (DICE_COLORS.size + 2));
+			diceAtlas = assetManager.get(Constants.DICE_ATLAS_PATH);
+			
+			for(int i = 0; i < Constants.DICE_COLORS.size; i++) {
+				outputDiceValues.insert(i, 0);
+				outputDiceImages.add(new Image(diceAtlas.findRegion(Constants.DICE_ATLAS_NAMES[i + 1] + "Questionmark")));
 			}
-			
-			fontGenerator.dispose();
 		}
 		
 		// Button: neu würfeln
@@ -69,19 +76,21 @@ public abstract class AbstractOverlay extends Actor {
 		});
 		changeScreenButton.setSize((Gdx.graphics.getWidth() / 2) - Constants.BUTTONS_PADDING, (Gdx.graphics.getHeight() * Constants.EDGE_HEIGHT_PERCENT) - Constants.BUTTONS_PADDING);
 		changeScreenButton.setPosition(0, 0);
+		instance = this;
 	}
 	
-	protected abstract void changeScreenButtonClicked();
+	public static Overlay getInstance() {
+		return instance;
+	}
 	
-	protected abstract void rollDicesButtonClicked();
-	
-	protected void show(Stage stage) {
+	public void show(Stage stage) {
 		table.clear();
 		setTableSize();
 		
 		// Würfel-Werte laden und ausgeben
 		for (int i = 0; i < Constants.DICE_COLORS.size; i++) {
-			table.add(outputDiceValues.get(i)).width(table.getWidth() / 3 * 2 / (DICE_COLORS.size + 2));
+			//table.add(outputDiceImages.get(i)).size(table.getWidth() / 3 * 2 / (DICE_COLORS.size + 2));
+			table.add(outputDiceImages.get(i)).size(table.getHeight());
 		}
 		
 		// Tabelle und Buttons anzeigen
@@ -95,6 +104,17 @@ public abstract class AbstractOverlay extends Actor {
 		super.draw(batch, parentAlpha);
 	}
 	
+	private void rollDicesButtonClicked() {
+		if (ScreenManager.getScreen().getClass() == ScorecardScreen.class) {
+			ScreenManager.changeScreen();
+		}
+		ScreenManager.getRollingDicesScreen().rollDices();
+	}
+	
+	private void changeScreenButtonClicked() {
+		ScreenManager.changeScreen();
+	}
+	
 	
 	public static void setButtonText(String text) {
 		changeScreenButton.setText(text);
@@ -106,16 +126,23 @@ public abstract class AbstractOverlay extends Actor {
 	}
 	
 	public static void setValue(int i, int number) {
+		outputDiceValues.set(i, number);
+		//Gdx.app.log("test", "setValue");
+		
 		if (number == 0) {
-			outputDiceValues.get(i).setText("?");
+			outputDiceImages.get(i).setDrawable(new TextureRegionDrawable(diceAtlas.findRegion(Constants.DICE_ATLAS_NAMES[i + 1] + "Questionmark")));
 		}
 		else {
-			outputDiceValues.get(i).setText(String.valueOf(number));
+			outputDiceImages.get(i).setDrawable(new TextureRegionDrawable(diceAtlas.findRegion(Constants.DICE_ATLAS_NAMES[i + 1] + String.valueOf(number))));
 		}
 	}
 	
+	public static int getValue(int i) {
+		return outputDiceValues.get(i);
+	}
+	
 	public static void resize() {
-		setTableSize();
+		//setTableSize();
 	}
 	
 	public static void enableButtons() {

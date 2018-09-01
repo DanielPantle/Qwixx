@@ -1,4 +1,4 @@
-package de.pantle.qwixx.utils;
+package de.pantle.qwixx.screen;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputMultiplexer;
@@ -17,6 +17,7 @@ import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
 import com.badlogic.gdx.graphics.g3d.utils.CameraInputController;
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Quaternion;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.collision.Ray;
@@ -37,13 +38,14 @@ import com.badlogic.gdx.physics.bullet.dynamics.btSequentialImpulseConstraintSol
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ArrayMap;
 
-import java.util.Random;
+import de.pantle.qwixx.utils.Constants;
+import de.pantle.qwixx.utils.Helper;
 
 /**
  * Created by Daniel on 05.04.2018.
  */
 
-public abstract class AbstractRollingDicesScreen extends AbstractScreen implements InputProcessor {
+public class RollingDicesScreen extends AbstractScreen implements InputProcessor {
 	
 	private final static short GROUND_FLAG = 1 << 8;
 	private final static short OBJECT_FLAG = 1 << 9;
@@ -75,6 +77,15 @@ public abstract class AbstractRollingDicesScreen extends AbstractScreen implemen
 	private Material originalMaterial;
 	private Vector3 position = new Vector3();
 	
+	// Start-Positionen von 1 - 6, werden zufällig ausgewählt
+	private static final int[][] STARTING_POSITIONS = {
+			{1, 0, 0, 180},
+			{1, 0, 0, 90},
+			{0, 0, 1, 270},
+			{0, 0, 1, 90},
+			{1, 0, 0, 270},
+			{1, 0, 0, 0},
+	};
 	
 	// Status der Würfel - ob sie noch fallen oder schon liegen
 	private enum DiceState {
@@ -85,14 +96,10 @@ public abstract class AbstractRollingDicesScreen extends AbstractScreen implemen
 	
 	private DiceState diceState;
 	
-	private Random random;
-	
-	public AbstractRollingDicesScreen() {
+	public RollingDicesScreen() {
 		super();
 		
 		Bullet.init();
-		
-		random = new Random();
 		
 		modelBatch = new ModelBatch();
 		environment = new Environment();
@@ -100,8 +107,8 @@ public abstract class AbstractRollingDicesScreen extends AbstractScreen implemen
 		environment.add(new DirectionalLight().set(GROUND_WIDTH * 2 / 3, GROUND_WIDTH * 2 / 3, GROUND_WIDTH * 2 / 3, -1f, -0.8f, -0.2f));
 		
 		camera = new PerspectiveCamera(67, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-		camera.position.set(3, 15, 4);
-		camera.lookAt(0, 0, 0);
+		camera.position.set(3, 13, 4);
+		camera.lookAt(0, 3, 0);
 		camera.near = -1f;
 		camera.far = 300f;
 		camera.update();
@@ -140,6 +147,7 @@ public abstract class AbstractRollingDicesScreen extends AbstractScreen implemen
 	@Override
 	public void show() {
 		super.show();
+		Overlay.getInstance().show(stage);
 	}
 	
 	private void doneLoading() {
@@ -159,7 +167,7 @@ public abstract class AbstractRollingDicesScreen extends AbstractScreen implemen
 		
 		for (int i = 0; i < Constants.DICE_FILE_PATHS.length; i++) {
 			Model diceModel = assetManager.get(Constants.DICE_PATH + Constants.DICE_FILE_PATHS[i], Model.class);
-			constructors.put("dice", new Helper.GameObject.Constructor(diceModel, diceModel.nodes.get(0).id, new btBoxShape(new Vector3(0.5f, 0.5f, 0.5f)), 1));
+			constructors.put("dice", new Helper.GameObject.Constructor(diceModel, diceModel.nodes.get(0).id, new btBoxShape(new Vector3(0.5f, 0.5f, 0.5f)), 1.5f));
 			
 			dices.add(constructors.get("dice").construct());
 			for (Material m : dices.get(i).materials) {
@@ -220,8 +228,11 @@ public abstract class AbstractRollingDicesScreen extends AbstractScreen implemen
 	
 	// Setzt den Würfel an eine zufällige Position
 	private void randomizeDicePosition(int i) {
-		dices.get(i).transform.set(new Vector3(random.nextInt(5) - 2.5f, 9f, random.nextInt(5) - 2.5f), new Quaternion());
-		dices.get(i).body.applyImpulse(new Vector3(random.nextInt(10) - 5f, random.nextInt(10) - 5f, random.nextInt(10) - 5f), new Vector3(random.nextInt(1) - 0.5f, random.nextInt(2) - 1f, random.nextInt(1) - 0.5f));
+		dices.get(i).transform.set(new Vector3(MathUtils.random(4), 5f, MathUtils.random(4)), new Quaternion());
+		int x = MathUtils.random(5);
+		dices.get(i).transform.rotate(STARTING_POSITIONS[x][0], STARTING_POSITIONS[x][1], STARTING_POSITIONS[x][2], STARTING_POSITIONS[x][3]);
+		dices.get(i).body.applyImpulse(new Vector3(-MathUtils.random(6), -MathUtils.random(5), -MathUtils.random(6)), new Vector3(MathUtils.random(), MathUtils.random(), MathUtils.random()));
+		//ohne z: dices.get(i).body.applyImpulse(new Vector3(-MathUtils.random(6), -MathUtils.random(5), 0), new Vector3(MathUtils.random(), MathUtils.random(), 0));
 		
 		dices.get(i).body.proceedToTransform(dices.get(i).transform);
 	}
@@ -233,7 +244,7 @@ public abstract class AbstractRollingDicesScreen extends AbstractScreen implemen
 			}
 		}
 		
-		AbstractOverlay.disableButtons();
+		Overlay.disableButtons();
 		diceState = DiceState.ROLLING;
 	}
 	
@@ -243,7 +254,8 @@ public abstract class AbstractRollingDicesScreen extends AbstractScreen implemen
 			doneLoading();
 		}
 		
-		dynamicsWorld.stepSimulation(delta, 5, 1f / 60f);
+		//dynamicsWorld.stepSimulation(delta, 5, 1f / 60f);
+		dynamicsWorld.stepSimulation(delta * 3);
 		
 		cameraInputController.update();
 		
@@ -257,34 +269,47 @@ public abstract class AbstractRollingDicesScreen extends AbstractScreen implemen
 				int y = Math.round(quaternion.getPitch() / 10) * 10;
 				int z = Math.round(quaternion.getYaw() / 10) * 10;
 				
+				if(x == -180) x = 180;
+				if(y == -180) y = 180;
+				if(z == -180) z = 180;
+				if(x == -90) x = 270;
+				if(y == -90) y = 270;
+				if(z == -90) z = 270;
+				
 				int number = 0;
 				
-				if (x == -180 && y == 0) {
+				if((x == 180 && y == 0)) {
 					number = 1;
 				}
-				else if (x == 180 && y == 0) {
-					number = 1;
+				else if((x == 0 && y == 90) || (y == 90 && z == 90)) {
+					number = 2;
 				}
-				else if (y == -90 && z == 0) {
+				else if((y == 270 && z == 0)) {
 					number = 3;
 				}
-				else if (y == 90 && z == 0) {
+				else if((x == 270 && y == 0) || (y == 90 && z == 0)) {
 					number = 4;
 				}
-				else if (y == -90) {
+				else if((x == 270 || x == 170 || x == -70) && y == 270 && z == 90) {
 					number = 5;
 				}
-				else if (x == 0 && y == 0) {
+				else if((x == 0 && y == 0) || (y == 270 && z == 90)) {
 					number = 6;
 				}
-				else if (y == 90) {
+				
+				else if(y == 270) {
+					number = 5;
+				}
+				else if(y == 90) {
 					number = 2;
 				}
 				else {
 					currentState = DiceState.ROLLING;
 				}
 				
-				AbstractOverlay.setValue(i, number);
+				//Gdx.app.log(number + " " + Constants.DICE_ATLAS_NAMES[i + 1], "x: " + x + ", y: " + y + ", z: " + z);
+				
+				Overlay.setValue(i, number);
 			}
 			
 			// Wenn alle Würfel liegen
@@ -297,7 +322,8 @@ public abstract class AbstractRollingDicesScreen extends AbstractScreen implemen
 			else if (diceState == DiceState.WAITING) {
 				diceState = DiceState.LYING;
 				Gdx.app.log("TEST", "ALLE WÜRFEL LIEGEN!");
-				AbstractOverlay.enableButtons();
+				
+				Overlay.enableButtons();
 			}
 		}
 		

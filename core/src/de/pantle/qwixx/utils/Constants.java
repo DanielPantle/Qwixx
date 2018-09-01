@@ -4,6 +4,9 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.utils.Array;
 
 public class Constants {
+	public final static String DICE_ATLAS_PATH = "dice_images_s.atlas";
+	public final static String[] DICE_ATLAS_NAMES = {"questionmark", "white", "white", "red", "yellow", "green", "blue"};
+	
 	// Würfel
 	public final static String DICE_PATH = "dice/";
 	public final static String[] DICE_FILE_PATHS = {"dice_white.g3db", "dice_white.g3db", "dice_red.g3db", "dice_yellow.g3db", "dice_green.g3db", "dice_blue.g3db"};
