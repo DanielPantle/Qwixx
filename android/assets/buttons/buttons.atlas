@@ -5,71 +5,71 @@ filter: Linear,Linear
 repeat: none
 blau
   rotate: false
-  xy: 0, 0
+  xy: 0, 769
   size: 256, 256
   orig: 256, 256
   offset: 0, 0
   index: -1
 gelb
   rotate: false
-  xy: 0, 256
+  xy: 0, 257
   size: 256, 256
   orig: 256, 256
   offset: 0, 0
   index: -1
 grau
   rotate: false
-  xy: 0, 512
+  xy: 0, 1025
   size: 256, 256
   orig: 256, 256
   offset: 0, 0
   index: -1
 gruen
   rotate: false
-  xy: 0, 768
+  xy: 0, 1537
   size: 256, 256
   orig: 256, 256
   offset: 0, 0
   index: -1
 miss
   rotate: false
-  xy: 0, 1024
+  xy: 0, 1281
   size: 256, 256
   orig: 256, 256
   offset: 0, 0
   index: -1
 none
   rotate: false
-  xy: 0, 1280
-  size: 1, 1
-  orig: 1, 1
-  offset: 0, 0
-  index: -1
-standard
-  rotate: false
-  xy: 1, 1280
-  size: 1, 1
-  orig: 1, 1
-  offset: 0, 0
-  index: -1
-standard_down
-  rotate: false
-  xy: 2, 1280
+  xy: 1, 0
   size: 1, 1
   orig: 1, 1
   offset: 0, 0
   index: -1
 res
   rotate: false
-  xy: 0, 1281
+  xy: 0, 513
   size: 256, 256
   orig: 256, 256
   offset: 0, 0
   index: -1
 rot
   rotate: false
-  xy: 0, 1537
+  xy: 0, 1
   size: 256, 256
   orig: 256, 256
+  offset: 0, 0
+  index: -1
+standard
+  rotate: false
+  xy: 0, 0
+  size: 1, 1
+  orig: 1, 1
+  offset: 0, 0
+  index: -1
+standard_down
+  rotate: false
+  xy: 2, 0
+  size: 1, 1
+  orig: 1, 1
   offset: 0, 0
   index: -1

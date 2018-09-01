@@ -4,9 +4,7 @@
         <key>fileFormatVersion</key>
         <int>4</int>
         <key>texturePackerVersion</key>
-        <string>4.6.3</string>
-        <key>fileName</key>
-        <string>D:/Programmieren/Java/Qwixx/android/assets/buttons/atlas.tps</string>
+        <string>4.8.3</string>
         <key>autoSDSettings</key>
         <array>
             <struct type="AutoSDSettings">
@@ -203,8 +201,8 @@
                 <false/>
             </struct>
             <key type="filename">none.png</key>
-            <key type="filename">normal.png</key>
-            <key type="filename">normal_down.png</key>
+            <key type="filename">standard.png</key>
+            <key type="filename">standard_down.png</key>
             <struct type="IndividualSpriteSettings">
                 <key>pivotPoint</key>
                 <point_f>0.5,0.5</point_f>
@@ -226,10 +224,10 @@
             <filename>gruen.png</filename>
             <filename>miss.png</filename>
             <filename>res.png</filename>
-            <filename>rot.png</filename>
             <filename>none.png</filename>
-            <filename>normal.png</filename>
-            <filename>normal_down.png</filename>
+            <filename>standard.png</filename>
+            <filename>standard_down.png</filename>
+            <filename>rot.png</filename>
         </array>
         <key>ignoreFileList</key>
         <array/>
